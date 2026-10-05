@@ -647,7 +647,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db5dbfd29a3e8354aa11b812fe59d2bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FrameRateTest
-  targetFps: 10
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1224,6 +1223,7 @@ GameObject:
   - component: {fileID: 649650861}
   - component: {fileID: 649650860}
   - component: {fileID: 649650859}
+  - component: {fileID: 649650863}
   m_Layer: 0
   m_Name: Cargo_03
   m_TagString: Untagged
@@ -1264,7 +1264,7 @@ MeshRenderer:
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
-  m_MotionVectors: 1
+  m_MotionVectors: 0
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
@@ -1324,6 +1324,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &649650863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 649650858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ce9bbbc62e48a941af93fd1735f217d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Bobber
+  bobHeight: 0.25
+  bobSpeed: 2
+
 --- !u!1 &718839350
 GameObject:
   m_ObjectHideFlags: 0
@@ -1537,7 +1552,7 @@ MeshRenderer:
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
-  m_MotionVectors: 1
+  m_MotionVectors: 0
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
@@ -1597,6 +1612,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+
 --- !u!1 &1058167341
 GameObject:
   m_ObjectHideFlags: 0
