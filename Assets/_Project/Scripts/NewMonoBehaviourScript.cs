@@ -1,9 +1,8 @@
 using UnityEngine;
 public class Spinner : MonoBehaviour
 {
-[SerializeField] private float rotationSpeed = 1f;
 void Update()
 {
-transform.Rotate(0f, rotationSpeed, 0f);
+transform.Rotate(0f, 1f, 0f); // 1 degree, every frame
 }
 }
