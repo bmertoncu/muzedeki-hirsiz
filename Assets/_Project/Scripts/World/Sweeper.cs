@@ -10,12 +10,12 @@ public class Sweeper : MonoBehaviour
 
     void Start()
     {
-        startRotation = transform.localRotation; // remember where we began
+        startRotation = transform.localRotation.normalized; // remember where we began
     }
 
     void Update()
     {
         float offset = Mathf.Sin(Time.time * sweepSpeed) * sweepAngle; // between -45 and +45
-        transform.localRotation = startRotation * Quaternion.Euler(0f, offset, 0f);
+        transform.localRotation = (startRotation * Quaternion.Euler(0f, offset, 0f)).normalized;
     }
 }
