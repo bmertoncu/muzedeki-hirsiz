@@ -15,6 +15,7 @@ public class Patroller : MonoBehaviour
 
     void Update()
     {
+        if (pointB == null) return;
         Vector3 target = goingToB ? pointB.position : pointA;
 
         transform.position = Vector3.MoveTowards(transform.position, target, speed*Time.deltaTime);

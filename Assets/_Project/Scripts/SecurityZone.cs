@@ -6,7 +6,7 @@ public class SecurityZone : MonoBehaviour
     {
         if (other.TryGetComponent<ThiefController>(out var thief))
         {
-            thief.GetCaught();
+            thief.SpotByCamera();
         }
     }
 }

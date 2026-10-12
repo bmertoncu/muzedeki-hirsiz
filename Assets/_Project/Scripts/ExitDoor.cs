@@ -2,19 +2,27 @@ using UnityEngine;
 
 public class ExitDoor : MonoBehaviour
 {
-    [SerializeField] private int requiredArtPieces = 1;
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent<ThiefController>(out var thief))
         {
-            if (thief.collectedArtCount >= requiredArtPieces)
+            if (thief.IsCarrying())
             {
-                thief.EscapeSuccess();
-            }
-            else
-            {
-                Debug.Log($"[Müzedeki Hırsız] Çıkış kilitli! Daha fazla sanat eseri toplamalısın ({thief.collectedArtCount}/{requiredArtPieces}).");
+                ArtPiece art = thief.HandOverArt();
+                if (art != null)
+                {
+                    Destroy(art.gameObject);
+                }
+
+                if (thief.totalDeliveredArt >= thief.totalArtInLevel)
+                {
+                    thief.hasEscaped = true;
+                    Debug.Log("<color=green>[MÜZEDEKİ HIRSIZ] TEBRİKLER! TÜM SANAT ESERLERİNİ ÇALDIP BÖLÜMÜ TAMAMLADINIZ!</color>");
+                }
+                else
+                {
+                    Debug.Log($"[Müze Çıkışı] Harika! Kalan eserler: {thief.totalArtInLevel - thief.totalDeliveredArt}");
+                }
             }
         }
     }

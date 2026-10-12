@@ -8,11 +8,16 @@ public class ThiefController : MonoBehaviour
 {
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 6f;
-    [SerializeField] private float rotationSpeed = 12f;
+    [SerializeField] private float rotationSpeed = 14f;
     [SerializeField] private float gravity = 20f;
 
-    [Header("Status")]
-    public int collectedArtCount = 0;
+    [Header("Carrying")]
+    [SerializeField] private Transform carryPoint;
+    public ArtPiece carriedArt;
+
+    [Header("Game Progress")]
+    public int totalDeliveredArt = 0;
+    public int totalArtInLevel = 5;
     public bool isCaught = false;
     public bool hasEscaped = false;
 
@@ -23,6 +28,11 @@ public class ThiefController : MonoBehaviour
     void Awake()
     {
         controller = GetComponent<CharacterController>();
+        if (carryPoint == null)
+        {
+            Transform found = transform.Find("CarryPoint");
+            if (found != null) carryPoint = found;
+        }
     }
 
     void Update()
@@ -32,7 +42,6 @@ public class ThiefController : MonoBehaviour
         float horizontal = 0f;
         float vertical = 0f;
 
-        // Legacy input fallback or Input System
 #if ENABLE_INPUT_SYSTEM
         if (Keyboard.current != null)
         {
@@ -41,10 +50,12 @@ public class ThiefController : MonoBehaviour
             if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) horizontal -= 1f;
             if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) horizontal += 1f;
         }
-#else
-        horizontal = Input.GetAxisRaw("Horizontal");
-        vertical = Input.GetAxisRaw("Vertical");
 #endif
+        if (horizontal == 0f && vertical == 0f)
+        {
+            horizontal = Input.GetAxisRaw("Horizontal");
+            vertical = Input.GetAxisRaw("Vertical");
+        }
 
         Vector3 inputDir = new Vector3(horizontal, 0f, vertical).normalized;
 
@@ -73,23 +84,45 @@ public class ThiefController : MonoBehaviour
         controller.Move(moveDirection * Time.deltaTime);
     }
 
-    public void CollectArt()
+    public bool IsCarrying()
     {
-        collectedArtCount++;
-        Debug.Log($"[Müzedeki Hırsız] Eser toplandı! Toplam: {collectedArtCount}");
+        return carriedArt != null;
     }
 
-    public void GetCaught()
+    void OnTriggerEnter(Collider other)
     {
         if (isCaught || hasEscaped) return;
-        isCaught = true;
-        Debug.LogWarning("[Müzedeki Hırsız] YAKALANDIN! Kameralara yakalandın.");
+
+        ArtPiece art = other.GetComponent<ArtPiece>();
+        if (art == null) return;
+        if (IsCarrying()) return;
+        if (!art.CanBePickedUp()) return;
+
+        carriedArt = art;
+        art.PickUp(carryPoint != null ? carryPoint : transform);
+        Debug.Log($"[Hırsız] {art.name} kafaya alındı!");
     }
 
-    public void EscapeSuccess()
+    public void SpotByCamera()
     {
         if (isCaught || hasEscaped) return;
-        hasEscaped = true;
-        Debug.Log($"<color=green>[Müzedeki Hırsız] TEBRİKLER! {collectedArtCount} eser ile kaçmayı başardın!</color>");
+
+        if (IsCarrying())
+        {
+            Debug.LogWarning("[Güvenlik Kamerası] ALARM! Eser kafandan düştü!");
+            carriedArt.Drop();
+            carriedArt = null;
+        }
+    }
+
+    public ArtPiece HandOverArt()
+    {
+        if (!IsCarrying()) return null;
+
+        ArtPiece delivered = carriedArt;
+        carriedArt = null;
+        totalDeliveredArt++;
+        Debug.Log($"<color=cyan>[Müze Çıkışı] Eser kaçırıldı! ({totalDeliveredArt}/{totalArtInLevel})</color>");
+        return delivered;
     }
 }
