@@ -1716,7 +1716,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000065}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3ce9bbbc62e48a941af93fd1735f217d, type: 3}
+  m_Script: {fileID: 11500000, guid: 67ad2db672c6b6443abbe1d0ceed6e6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bobber
   bobHeight: 0.25
@@ -1983,7 +1983,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000078}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3ce9bbbc62e48a941af93fd1735f217d, type: 3}
+  m_Script: {fileID: 11500000, guid: 67ad2db672c6b6443abbe1d0ceed6e6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bobber
   bobHeight: 0.25
@@ -2250,7 +2250,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000091}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3ce9bbbc62e48a941af93fd1735f217d, type: 3}
+  m_Script: {fileID: 11500000, guid: 67ad2db672c6b6443abbe1d0ceed6e6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bobber
   bobHeight: 0.25
@@ -2517,7 +2517,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000104}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3ce9bbbc62e48a941af93fd1735f217d, type: 3}
+  m_Script: {fileID: 11500000, guid: 67ad2db672c6b6443abbe1d0ceed6e6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bobber
   bobHeight: 0.25
