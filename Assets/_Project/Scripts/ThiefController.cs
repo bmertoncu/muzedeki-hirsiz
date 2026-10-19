@@ -27,6 +27,7 @@ public class ThiefController : MonoBehaviour
 
     void Awake()
     {
+        Application.targetFrameRate = 60;
         controller = GetComponent<CharacterController>();
         if (carryPoint == null)
         {

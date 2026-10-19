@@ -11,5 +11,9 @@ PhysicsMaterial:
   m_DynamicFriction: 0
   m_StaticFriction: 0
   m_Bounciness: 0
+<<<<<<< HEAD
   m_FrictionCombine: 0
+=======
+  m_FrictionCombine: 2
+>>>>>>> a122c045cc8456a1bea4422b548b224d3f7cd13a
   m_BounceCombine: 0
