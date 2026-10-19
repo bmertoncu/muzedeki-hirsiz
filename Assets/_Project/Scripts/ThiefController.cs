@@ -9,6 +9,7 @@ public class ThiefController : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 6f;
     [SerializeField] private float rotationSpeed = 14f;
+    [SerializeField] private float acceleration = 12f; // W04: how fast speed changes
     [SerializeField] private float gravity = 20f;
 
     [Header("Carrying")]
@@ -23,6 +24,7 @@ public class ThiefController : MonoBehaviour
 
     private CharacterController controller;
     private Vector3 moveDirection;
+    private Vector3 currentVelocity; // flat speed we have now
     private float verticalVelocity;
 
     void Awake()
@@ -46,6 +48,9 @@ public class ThiefController : MonoBehaviour
 #if ENABLE_INPUT_SYSTEM
         if (Keyboard.current != null)
         {
+            // W04: E = drop the art piece (one press = one drop)
+            if (Keyboard.current.eKey.wasPressedThisFrame) DropArt();
+
             if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) vertical += 1f;
             if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed) vertical -= 1f;
             if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) horizontal -= 1f;
@@ -63,12 +68,12 @@ public class ThiefController : MonoBehaviour
             float targetAngle = Mathf.Atan2(inputDir.x, inputDir.z) * Mathf.Rad2Deg;
             Quaternion targetRotation = Quaternion.Euler(0f, targetAngle, 0f);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime).normalized;
-            moveDirection = inputDir * moveSpeed;
         }
-        else
-        {
-            moveDirection = Vector3.zero;
-        }
+
+        // W04: get a little closer to the wanted speed (also slows down smoothly)
+        Vector3 wanted = inputDir * moveSpeed;
+        currentVelocity = Vector3.MoveTowards(currentVelocity, wanted, acceleration * Time.deltaTime);
+        moveDirection = currentVelocity;
 
         if (controller.isGrounded)
         {
@@ -100,6 +105,15 @@ public class ThiefController : MonoBehaviour
         carriedArt = art;
         art.PickUp(carryPoint != null ? carryPoint : transform);
         Debug.Log($"[Hırsız] {art.name} kafaya alındı!");
+    }
+
+    // W04: the player drops the art on purpose (same as the camera knocking it off)
+    public void DropArt()
+    {
+        if (!IsCarrying()) return;
+
+        carriedArt.Drop();
+        carriedArt = null;
     }
 
     public void SpotByCamera()
