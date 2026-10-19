@@ -24,32 +24,69 @@ public class VisionCone : MonoBehaviour
     private MeshCollider meshCollider;
     private Mesh coneMesh;
 
+    private float lastFov = -1f;
+    private float lastDist = -1f;
+    private int lastSeg = -1;
+    private float lastThick = -1f;
+
     private void Awake()
     {
-        GenerateCone();
+        if (Application.isPlaying)
+        {
+            // Hareket eden collider'ın statik fizik ağacını her kare yeniden hesaplatmaması için Kinematic Rigidbody ekle
+            if (!TryGetComponent<Rigidbody>(out var rb))
+            {
+                rb = gameObject.AddComponent<Rigidbody>();
+            }
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+        GenerateCone(false);
     }
 
     private void OnEnable()
     {
-        GenerateCone();
+        GenerateCone(false);
     }
 
     private void OnValidate()
     {
-        GenerateCone();
+        GenerateCone(false);
     }
 
     [ContextMenu("Koniyi Yeniden Oluştur")]
-    public void GenerateCone()
+    public void ForceRegenerateCone()
+    {
+        GenerateCone(true);
+    }
+
+    public void GenerateCone(bool force = false)
     {
         if (meshFilter == null) meshFilter = GetComponent<MeshFilter>();
         if (meshCollider == null) meshCollider = GetComponent<MeshCollider>();
 
         // Eski BoxCollider varsa devre dışı bırak
-        if (TryGetComponent<BoxCollider>(out var box))
+        if (TryGetComponent<BoxCollider>(out var box) && box.enabled)
         {
             box.enabled = false;
         }
+
+        int seg = Mathf.Max(1, segments);
+
+        // Parametreler değişmediyse ve mesh zaten hazırsa tekrar hesaplama (Performans optimizasyonu)
+        if (!force && coneMesh != null && meshFilter != null && meshFilter.sharedMesh == coneMesh &&
+            Mathf.Approximately(lastFov, fovAngle) &&
+            Mathf.Approximately(lastDist, distance) &&
+            lastSeg == seg &&
+            Mathf.Approximately(lastThick, thickness))
+        {
+            return;
+        }
+
+        lastFov = fovAngle;
+        lastDist = distance;
+        lastSeg = seg;
+        lastThick = thickness;
 
         if (coneMesh == null)
         {
@@ -60,8 +97,6 @@ public class VisionCone : MonoBehaviour
         {
             coneMesh.Clear();
         }
-
-        int seg = Mathf.Max(1, segments);
         float halfAngle = fovAngle * 0.5f * Mathf.Deg2Rad;
         float halfThick = thickness * 0.5f;
 
