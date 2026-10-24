@@ -20,6 +20,9 @@ public class VisionCone : MonoBehaviour
     [Tooltip("2D koninin düzlemsel kalınlığı (fizik çarpışmaları ve çift taraflı görünüm için).")]
     public float thickness = 0.08f;
 
+    [Tooltip("Açıksa koni düz bir üçgen yerine hacimli (3D) bir koni olur.")]
+    public bool volumetric = false;
+
     private MeshFilter meshFilter;
     private MeshCollider meshCollider;
     private Mesh coneMesh;
@@ -28,6 +31,7 @@ public class VisionCone : MonoBehaviour
     private float lastDist = -1f;
     private int lastSeg = -1;
     private float lastThick = -1f;
+    private bool lastVolumetric;
 
     private void Awake()
     {
@@ -78,7 +82,8 @@ public class VisionCone : MonoBehaviour
             Mathf.Approximately(lastFov, fovAngle) &&
             Mathf.Approximately(lastDist, distance) &&
             lastSeg == seg &&
-            Mathf.Approximately(lastThick, thickness))
+            Mathf.Approximately(lastThick, thickness) &&
+            lastVolumetric == volumetric)
         {
             return;
         }
@@ -87,6 +92,7 @@ public class VisionCone : MonoBehaviour
         lastDist = distance;
         lastSeg = seg;
         lastThick = thickness;
+        lastVolumetric = volumetric;
 
         if (coneMesh == null)
         {
@@ -99,6 +105,13 @@ public class VisionCone : MonoBehaviour
         }
         float halfAngle = fovAngle * 0.5f * Mathf.Deg2Rad;
         float halfThick = thickness * 0.5f;
+
+        if (volumetric)
+        {
+            BuildVolumetricCone(seg, halfAngle);
+            ApplyMesh();
+            return;
+        }
 
         // Tepe noktası: (0, 0, 0)
         // Üst yüzey için: Tepe (0), Arc noktaları 1..seg+1
@@ -197,6 +210,11 @@ public class VisionCone : MonoBehaviour
         coneMesh.RecalculateNormals();
         coneMesh.RecalculateBounds();
 
+        ApplyMesh();
+    }
+
+    private void ApplyMesh()
+    {
         if (meshFilter != null)
         {
             meshFilter.sharedMesh = coneMesh;
@@ -209,5 +227,35 @@ public class VisionCone : MonoBehaviour
             meshCollider.convex = true;
             meshCollider.isTrigger = true;
         }
+    }
+
+    // 3D koni: tepe (0,0,0), taban z = distance'ta bir daire
+    private void BuildVolumetricCone(int seg, float halfAngle)
+    {
+        int ring = Mathf.Max(seg, 3);
+        float radius = distance * Mathf.Tan(halfAngle);
+
+        Vector3[] vertices = new Vector3[ring + 2];
+        vertices[0] = Vector3.zero;                              // apex
+        vertices[ring + 1] = new Vector3(0f, 0f, distance);      // base centre
+        for (int i = 0; i < ring; i++)
+        {
+            float a = 2f * Mathf.PI * i / ring;
+            vertices[1 + i] = new Vector3(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius, distance);
+        }
+
+        System.Collections.Generic.List<int> tris = new System.Collections.Generic.List<int>();
+        for (int i = 0; i < ring; i++)
+        {
+            int a = 1 + i;
+            int b = 1 + (i + 1) % ring;
+            tris.Add(0); tris.Add(b); tris.Add(a);                 // side (faces outward)
+            tris.Add(ring + 1); tris.Add(a); tris.Add(b);          // base (faces outward)
+        }
+
+        coneMesh.vertices = vertices;
+        coneMesh.triangles = tris.ToArray();
+        coneMesh.RecalculateNormals();
+        coneMesh.RecalculateBounds();
     }
 }
