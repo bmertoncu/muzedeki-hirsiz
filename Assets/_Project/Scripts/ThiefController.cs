@@ -25,6 +25,7 @@ public class ThiefController : MonoBehaviour
     private CharacterController controller;
     private Vector3 moveDirection;
     private Vector3 currentVelocity; // flat speed we have now
+    private float grip = 1f;            // 1 = normal ground, small = slippery
     private float verticalVelocity;
 
     void Awake()
@@ -72,7 +73,7 @@ public class ThiefController : MonoBehaviour
 
         // W04: get a little closer to the wanted speed (also slows down smoothly)
         Vector3 wanted = inputDir * moveSpeed;
-        currentVelocity = Vector3.MoveTowards(currentVelocity, wanted, acceleration * Time.deltaTime);
+        currentVelocity = Vector3.MoveTowards(currentVelocity, wanted, acceleration * grip * Time.deltaTime);
         moveDirection = currentVelocity;
 
         if (controller.isGrounded)
@@ -105,6 +106,12 @@ public class ThiefController : MonoBehaviour
         carriedArt = art;
         art.PickUp(carryPoint != null ? carryPoint : transform);
         Debug.Log($"[Hırsız] {art.name} kafaya alındı!");
+    }
+
+    // W04: wet or icy floors call this (see WetFloor)
+    public void SetGrip(float value)
+    {
+        grip = value;
     }
 
     // W04: the player drops the art on purpose (same as the camera knocking it off)
