@@ -1471,6 +1471,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f725ef1884b45ffaa2a0f4fd1650156, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExitDoor
+  nextSceneName: ""
+  delayBeforeNextScene: 1.5
 --- !u!1 &100000060
 GameObject:
   m_ObjectHideFlags: 0

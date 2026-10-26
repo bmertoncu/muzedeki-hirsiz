@@ -3,20 +3,20 @@ using UnityEngine.InputSystem;
 
 public class PlayerMove : MonoBehaviour
 {
-    [Header("Hareket ve Zýplama")]
+    [Header("Hareket ve ZÄ±plama")]
     [SerializeField] private float maxSpeed = 5f;
     [SerializeField] private float acceleration = 40f;
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float jumpForce = 5f;
     [SerializeField] private float groundCheckDistance = 1.1f;
 
-    [Header("Kutu Taþýma (Carrying)")]
+    [Header("Kutu TaÅŸÄ±ma (Carrying)")]
     [SerializeField] private Transform carryPoint;
     public ArtPiece carriedArt;
 
-    [Header("Oyun Ýlerlemesi")]
+    [Header("Oyun Ä°lerlemesi")]
     public int totalDeliveredArt = 0;
-    public int totalArtInLevel = 5;
+    public int totalArtInLevel = 4;
     public bool isCaught = false;
     public bool hasEscaped = false;
 
@@ -29,9 +29,12 @@ public class PlayerMove : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        moveAction = InputSystem.actions.FindAction("Move");
+        if (InputSystem.actions != null)
+        {
+            moveAction = InputSystem.actions.FindAction("Move");
+        }
 
-        // Kutu taþýma noktasýný otomatik bul (eðer atanmamýþsa)
+        // Kutu taÅŸÄ±ma noktasÄ±nÄ± otomatik bul (eÄŸer atanmamÄ±ÅŸsa)
         if (carryPoint == null)
         {
             Transform found = transform.Find("CarryPoint");
@@ -41,23 +44,41 @@ public class PlayerMove : MonoBehaviour
 
     void Update()
     {
-        // Yakalandýysa veya kaçtýysa hiçbir þey yapma
+        // YakalandÄ±ysa veya kaÃ§tÄ±ysa hiÃ§bir ÅŸey yapma
         if (isCaught || hasEscaped) return;
 
-        // Klavyeden E tuþuna basýlýrsa eseri/kutuyu býrak
+        // Klavyeden E tuÅŸuna basÄ±lÄ±rsa eseri/kutuyu bÄ±rak
         if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
             DropArt();
         }
 
-        Vector2 input = moveAction.ReadValue<Vector2>();
-        direction = new Vector3(input.x, 0f, input.y);
+        Vector2 input = Vector2.zero;
+        if (moveAction != null)
+        {
+            input = moveAction.ReadValue<Vector2>();
+        }
+        else if (Keyboard.current != null)
+        {
+            if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) input.y += 1f;
+            if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed) input.y -= 1f;
+            if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) input.x -= 1f;
+            if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) input.x += 1f;
+        }
+        else
+        {
+            input.x = Input.GetAxisRaw("Horizontal");
+            input.y = Input.GetAxisRaw("Vertical");
+        }
 
-        // Zýplama Lazer Kontrolü
+        direction = new Vector3(input.x, 0f, input.y).normalized;
+
+        // ZÄ±plama Lazer KontrolÃ¼
         isGrounded = Physics.Raycast(transform.position, Vector3.down, groundCheckDistance);
 
-        // Zýplama Ýþlemi
-        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame && isGrounded)
+        // ZÄ±plama Ä°ÅŸlemi
+        bool jumpPressed = (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame) || Input.GetKeyDown(KeyCode.Space);
+        if (jumpPressed && isGrounded && rb != null)
         {
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
@@ -66,7 +87,9 @@ public class PlayerMove : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Yakalandýysa karakteri olduðu yere çivile
+        if (rb == null) return;
+
+        // YakalandÄ±ysa karakteri olduÄŸu yere Ã§ivile
         if (isCaught || hasEscaped)
         {
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
@@ -95,7 +118,7 @@ public class PlayerMove : MonoBehaviour
         grip = value;
     }
 
-    // --- KUTU TAÞIMA VE OYUN MANTIÐI ---
+    // --- KUTU TAÅžIMA VE OYUN MANTIÄžI ---
 
     public bool IsCarrying()
     {
@@ -106,15 +129,15 @@ public class PlayerMove : MonoBehaviour
     {
         if (isCaught || hasEscaped) return;
 
-        // Çarptýðýmýz obje eser/kutu mu?
+        // Ã‡arptÄ±ÄŸÄ±mÄ±z obje eser/kutu mu?
         ArtPiece art = other.GetComponent<ArtPiece>();
         if (art == null) return;
-        if (IsCarrying()) return; // Zaten bir þey taþýyorsak alma
+        if (IsCarrying()) return; // Zaten bir ÅŸey taÅŸÄ±yorsak alma
         if (!art.CanBePickedUp()) return;
 
         carriedArt = art;
         art.PickUp(carryPoint != null ? carryPoint : transform);
-        Debug.Log($"[Hýrsýz] {art.name} kafaya alýndý!");
+        Debug.Log($"[HÄ±rsÄ±z] {art.name} kafaya alÄ±ndÄ±!");
     }
 
     public void DropArt()
@@ -131,7 +154,7 @@ public class PlayerMove : MonoBehaviour
 
         if (IsCarrying())
         {
-            Debug.LogWarning("[Güvenlik Kamerasý] ALARM! Eser kafandan düþtü!");
+            Debug.LogWarning("[GÃ¼venlik KamerasÄ±] ALARM! Eser kafandan dÃ¼ÅŸtÃ¼!");
             carriedArt.Drop();
             carriedArt = null;
         }
@@ -144,7 +167,7 @@ public class PlayerMove : MonoBehaviour
         ArtPiece delivered = carriedArt;
         carriedArt = null;
         totalDeliveredArt++;
-        Debug.Log($"<color=cyan>[Müze Çýkýþý] Eser kaçýrýldý! ({totalDeliveredArt}/{totalArtInLevel})</color>");
+        Debug.Log($"<color=cyan>[MÃ¼ze Ã‡Ä±kÄ±ÅŸÄ±] Eser kaÃ§Ä±rÄ±ldÄ±! ({totalDeliveredArt}/{totalArtInLevel})</color>");
         return delivered;
     }
 }

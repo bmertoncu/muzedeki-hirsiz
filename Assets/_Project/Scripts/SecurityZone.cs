@@ -18,5 +18,9 @@ public class SecurityZone : MonoBehaviour
         {
             thief.SpotByCamera();
         }
+        else if (other.TryGetComponent<PlayerMove>(out var pm))
+        {
+            pm.SpotByCamera();
+        }
     }
 }

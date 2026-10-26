@@ -10,6 +10,7 @@ public class ThiefController : MonoBehaviour
     [SerializeField] private float moveSpeed = 6f;
     [SerializeField] private float rotationSpeed = 14f;
     [SerializeField] private float acceleration = 12f; // W04: how fast speed changes
+    [SerializeField] private float jumpForce = 6.5f;   // Zıplama gücü (Space)
     [SerializeField] private float gravity = 20f;
 
     [Header("Carrying")]
@@ -18,14 +19,14 @@ public class ThiefController : MonoBehaviour
 
     [Header("Game Progress")]
     public int totalDeliveredArt = 0;
-    public int totalArtInLevel = 5;
+    public int totalArtInLevel = 4;
     public bool isCaught = false;
     public bool hasEscaped = false;
 
     private CharacterController controller;
     private Vector3 moveDirection;
     private Vector3 currentVelocity; // flat speed we have now
-    private float grip = 1f;            // 1 = normal ground, small = slippery
+    private float grip = 1f;         // 1 = normal ground, small = slippery
     private float verticalVelocity;
 
     void Awake()
@@ -45,6 +46,7 @@ public class ThiefController : MonoBehaviour
 
         float horizontal = 0f;
         float vertical = 0f;
+        bool jumpPressed = false;
 
 #if ENABLE_INPUT_SYSTEM
         if (Keyboard.current != null)
@@ -52,14 +54,23 @@ public class ThiefController : MonoBehaviour
             // W04: E = drop the art piece (one press = one drop)
             if (Keyboard.current.eKey.wasPressedThisFrame) DropArt();
 
+            // Zıplama (Space)
+            if (Keyboard.current.spaceKey.wasPressedThisFrame) jumpPressed = true;
+
             if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) vertical += 1f;
             if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed) vertical -= 1f;
             if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) horizontal -= 1f;
             if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) horizontal += 1f;
         }
-#elif ENABLE_LEGACY_INPUT_MANAGER
-        horizontal = Input.GetAxisRaw("Horizontal");
-        vertical = Input.GetAxisRaw("Vertical");
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (horizontal == 0f && vertical == 0f)
+        {
+            horizontal = Input.GetAxisRaw("Horizontal");
+            vertical = Input.GetAxisRaw("Vertical");
+        }
+        if (Input.GetKeyDown(KeyCode.E)) DropArt();
+        if (Input.GetKeyDown(KeyCode.Space)) jumpPressed = true;
 #endif
 
         Vector3 inputDir = new Vector3(horizontal, 0f, vertical).normalized;
@@ -79,6 +90,10 @@ public class ThiefController : MonoBehaviour
         if (controller.isGrounded)
         {
             verticalVelocity = -0.5f;
+            if (jumpPressed)
+            {
+                verticalVelocity = jumpForce;
+            }
         }
         else
         {

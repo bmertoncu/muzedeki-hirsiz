@@ -9,17 +9,26 @@ public class WetFloor : MonoBehaviour
     // Detect: someone steps on the wet floor
     void OnTriggerEnter(Collider other)
     {
-        // Who? only the thief has ThiefController
-        ThiefController thief = other.GetComponent<ThiefController>();
-
-        // Act: the thief loses its grip
-        if (thief != null) thief.SetGrip(grip);
+        if (other.TryGetComponent<ThiefController>(out var thief))
+        {
+            thief.SetGrip(grip);
+        }
+        else if (other.TryGetComponent<PlayerMove>(out var pm))
+        {
+            pm.SetGrip(grip);
+        }
     }
 
     // Detect: the thief leaves the wet floor
     void OnTriggerExit(Collider other)
     {
-        ThiefController thief = other.GetComponent<ThiefController>();
-        if (thief != null) thief.SetGrip(1f);   // full grip again
+        if (other.TryGetComponent<ThiefController>(out var thief))
+        {
+            thief.SetGrip(1f);   // full grip again
+        }
+        else if (other.TryGetComponent<PlayerMove>(out var pm))
+        {
+            pm.SetGrip(1f);
+        }
     }
 }
