@@ -31,7 +31,7 @@ public class ExitDoor : MonoBehaviour
                 {
                     thief.hasEscaped = true;
                     levelFinished = true;
-                    Debug.Log("<color=green>[MÜZEDEKİ HIRSIZ] TEBRİKLER! TÜM SANAT ESERLERİNİ ÇALIP BÖLÜMÜ TAMAMLADINIZ!</color>");
+                    Debug.Log("<color=green>[MÜZEDEKİ HIRSIZ] TEBRİKLER! TÜM SANAT ESERLERİNİ ÇALIP BÖLÜMÜ TAMAMLADINIZ! helal  olsun </color>");
                     TriggerNextLevel();
                 }
                 else
