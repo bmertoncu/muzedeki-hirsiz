@@ -9,13 +9,17 @@ public class ThiefController : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 6f;
     [SerializeField] private float rotationSpeed = 14f;
-    [SerializeField] private float acceleration = 12f; // W04: how fast speed changes
-    [SerializeField] private float jumpForce = 6.5f;   // Zıplama gücü (Space)
+    [SerializeField] private float acceleration = 12f;
+    [SerializeField] private float jumpForce = 6.5f;    // Normal zıplama
+    [SerializeField] private float lowJumpForce = 0.5f; // Ağır eşya zıplaması
     [SerializeField] private float gravity = 20f;
 
     [Header("Carrying")]
     [SerializeField] private Transform carryPoint;
     public ArtPiece carriedArt;
+
+    [Header("Ağırlık Sistemi")]
+    public int hirsizAgirligi = 1; // Hırsızın temel ağırlığı
 
     [Header("Game Progress")]
     public int totalDeliveredArt = 0;
@@ -25,8 +29,8 @@ public class ThiefController : MonoBehaviour
 
     private CharacterController controller;
     private Vector3 moveDirection;
-    private Vector3 currentVelocity; // flat speed we have now
-    private float grip = 1f;         // 1 = normal ground, small = slippery
+    private Vector3 currentVelocity;
+    private float grip = 1f;
     private float verticalVelocity;
 
     void Awake()
@@ -51,10 +55,7 @@ public class ThiefController : MonoBehaviour
 #if ENABLE_INPUT_SYSTEM
         if (Keyboard.current != null)
         {
-            // W04: E = drop the art piece (one press = one drop)
             if (Keyboard.current.eKey.wasPressedThisFrame) DropArt();
-
-            // Zıplama (Space)
             if (Keyboard.current.spaceKey.wasPressedThisFrame) jumpPressed = true;
 
             if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) vertical += 1f;
@@ -82,7 +83,6 @@ public class ThiefController : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime).normalized;
         }
 
-        // W04: get a little closer to the wanted speed (also slows down smoothly)
         Vector3 wanted = inputDir * moveSpeed;
         currentVelocity = Vector3.MoveTowards(currentVelocity, wanted, acceleration * grip * Time.deltaTime);
         moveDirection = currentVelocity;
@@ -92,7 +92,7 @@ public class ThiefController : MonoBehaviour
             verticalVelocity = -0.5f;
             if (jumpPressed)
             {
-                verticalVelocity = jumpForce;
+                verticalVelocity = GetCurrentJumpForce();
             }
         }
         else
@@ -102,6 +102,33 @@ public class ThiefController : MonoBehaviour
 
         moveDirection.y = verticalVelocity;
         controller.Move(moveDirection * Time.deltaTime);
+    }
+
+    private float GetCurrentJumpForce()
+    {
+        int kutuAgirligi = 0;
+
+        // Eşya taşıyorsak onun ağırlığını al
+        if (carriedArt != null)
+        {
+            EsyaOzellikleri esya = carriedArt.GetComponent<EsyaOzellikleri>();
+            if (esya != null)
+            {
+                kutuAgirligi = esya.agirlik;
+            }
+        }
+
+        // İSTEDİĞİN MANTIK: Hırsız ağırlığı + Kutu ağırlığı
+        int toplamAgirlik = hirsizAgirligi + kutuAgirligi;
+
+        // 4 ve üzeriyse alçak zıpla (Örn: Hırsız 1 + Turuncu Kutu 3 = 4)
+        if (toplamAgirlik >= 4)
+        {
+            return lowJumpForce;
+        }
+
+        // 4'ten küçükse normal zıpla (Örn: Hırsız 1 + Turkuaz Kutu 1 = 2)
+        return jumpForce;
     }
 
     public bool IsCarrying()
@@ -123,13 +150,11 @@ public class ThiefController : MonoBehaviour
         Debug.Log($"[Hırsız] {art.name} kafaya alındı!");
     }
 
-    // W04: wet or icy floors call this (see WetFloor)
     public void SetGrip(float value)
     {
         grip = value;
     }
 
-    // W04: the player drops the art on purpose (same as the camera knocking it off)
     public void DropArt()
     {
         if (!IsCarrying()) return;
