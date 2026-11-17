@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Sweeper : MonoBehaviour
 {
-    // degrees to each side, like a security camera looking left and right
+    // Kameranın iki yöne döneceği açı
     [SerializeField] private float sweepAngle = 45f;
     [SerializeField] private float sweepSpeed = 1f;
 
@@ -10,12 +10,17 @@ public class Sweeper : MonoBehaviour
 
     void Start()
     {
-        startRotation = transform.localRotation.normalized; // remember where we began
+        startRotation = transform.localRotation.normalized;
+
+        // Kameranın dönüşünü yavaşlatır
+        sweepSpeed = 0.3f;
     }
 
     void Update()
     {
-        float offset = Mathf.Sin(Time.time * sweepSpeed) * sweepAngle; // between -45 and +45
-        transform.localRotation = (startRotation * Quaternion.Euler(0f, offset, 0f)).normalized;
+        float offset = Mathf.Sin(Time.time * sweepSpeed) * sweepAngle;
+
+        transform.localRotation =
+            (startRotation * Quaternion.Euler(0f, offset, 0f)).normalized;
     }
 }
